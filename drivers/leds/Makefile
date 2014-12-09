@@ -59,6 +59,7 @@ obj-$(CONFIG_LEDS_MAX8997)		+= leds-max8997.o
 obj-$(CONFIG_LEDS_LM355x)		+= leds-lm355x.o
 obj-$(CONFIG_LEDS_BLINKM)		+= leds-blinkm.o
 obj-$(CONFIG_LEDS_MSM_GPIO_FLASH)	+= leds-msm-gpio-flash.o
+obj-$(CONFIG_LEDS_AW2013)		+= leds-aw2013.o
 obj-$(CONFIG_LEDS_BD65B60)		+= leds-bd65b60.o
 obj-$(CONFIG_LEDS_ATC)			+= leds-atc.o
 obj-$(CONFIG_LEDS_ISL98611)		+= leds-isl98611.o
