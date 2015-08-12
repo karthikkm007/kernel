@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -16,8 +16,8 @@
  * VERSION = "1.0"
  *---------------------------------------------------------------------------*/
 &mdss_mdp {
-	mdss_dsi_nt35521_720p_video: qcom,mdss_dsi_nt35521_720p_video {
-		qcom,mdss-dsi-panel-name = "nt35521_HD720p_video_AUO5";
+	mdss_dsi_nt35521s_720p_video: qcom,mdss_dsi_nt35521s_720p_video {
+		qcom,mdss-dsi-panel-name = "nt35521s_HD720p_video_BOE";
 		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
 		qcom,mdss-dsi-panel-type = "dsi_video_mode";
 		qcom,mdss-dsi-panel-destination = "display_1";
@@ -42,24 +42,14 @@
 		qcom,mdss-dsi-bpp = <24>;
 		qcom,mdss-dsi-underflow-color = <0xff>;
 		qcom,mdss-dsi-border-color = <0>;
-		qcom,mdss-dsi-pixel-packing = "tight";
-		qcom,mdss-dsi-on-command = [39 01 00 00 00 00 06 f0 55 aa 52 08 00
-				39 01 00 00 00 00 02 c8 00
-				39 01 00 00 00 00 06 f0 55 aa 52 08 01
-				39 01 00 00 00 00 03 b5 04 04
-				39 01 00 00 00 00 03 b9 35 35
-				39 01 00 00 00 00 03 ba 25 25 05 01 00 00 78 00 02 11 00 05 01 00 00 00 00 02 29 00];
-		qcom,mdss-dsi-off-command = [05 01 00 00 00 00 02 28 00
-					05 01 00 00 00 00 02 10 00];
+		qcom,mdss-dsi-on-command = [29 01 00 00 00 00 02 35 00 05 01 00 00 78 00 02 11 00 05 01 00 00 00 00 02 29 00];
+		qcom,mdss-dsi-off-command = [05 01 00 00 00 00 02 28 00 05 01 00 00 78 00 02 10 00];
 		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
 		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
 		qcom,mdss-dsi-h-sync-pulse = <1>;
-		qcom,mdss-dsi-traffic-mode = "burst_mode";
+		qcom,mdss-dsi-traffic-mode = "non_burst_sync_event";
 		qcom,mdss-dsi-bllp-eof-power-mode;
 		qcom,mdss-dsi-bllp-power-mode;
-		qcom,mdss-dsi-hfp-power-mode;
-		qcom,mdss-dsi-hbp-power-mode;
-		qcom,mdss-dsi-hsa-power-mode;
 		qcom,mdss-dsi-lane-0-state;
 		qcom,mdss-dsi-lane-1-state;
 		qcom,mdss-dsi-lane-2-state;
