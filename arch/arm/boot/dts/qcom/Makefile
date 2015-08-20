@@ -40,7 +40,9 @@ dtb-$(CONFIG_ARCH_MSM8909) += msm8909-sim.dtb \
 	msm8909-1gb-cdp.dtb \
 	msm8909-1gb-mtp.dtb
 # Do not include QC default DTBs if not needed
-ifneq ($(CONFIG_MMI_DEVICE_DTBS),y)
+ifeq ($(CONFIG_MACH_XIAOMI_MSM8916),y)
+dtb-$(CONFIG_ARCH_MSM8916) += msm8916-hm2014811.dtb
+else
 dtb-$(CONFIG_ARCH_MSM8916) += msm8916-sim.dtb \
 	msm8916-rumi.dtb \
 	msm8916-cdp.dtb \
