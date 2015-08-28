@@ -21,7 +21,29 @@
 #include "dsi-panel-otm1285a-otp-720p-video.dtsi"
 #include "dsi-panel-r61308-s88047a1-720p-video.dtsi"
 
+&memory {
+	pstore_reserve_mem: pstore_reserve_mem_region@0 {
+		linux,reserve-contiguous-region;
+		linux,reserve-region;
+		linux,remove-completely;
+		reg = <0x0 0x9ff00000 0x0 0x00100000>;
+		label = "pstore_reserve_mem";
+	};
+};
+
 &soc {
+	ramoops {
+		compatible = "ramoops";
+		status = "ok";
+
+		android,ramoops-buffer-start = <0x9ff00000>;
+		android,ramoops-buffer-size = <0x100000>;
+		android,ramoops-console-size = <0x80000>;
+		android,ramoops-record-size = <0x7F800>;
+		android,ramoops-annotate-size = <0x800>;
+		android,ramoops-dump-oops = <0x1>;
+	};
+	
 	flash_ocp8110:flashlight {
 		compatible = "qcom,leds-gpio-flash";
 		status = "okay";
@@ -87,6 +109,12 @@
 		asoc-codec = <&stub_codec>, <&pm8916_tombak_dig>;
 		asoc-codec-names = "msm-stub-codec.1", "tombak_codec";
 	};
+
+	bq2022a {
+		compatible = "bq2022a";
+		status= "okay";
+	};
+
 };
 
 &pm8916_mpps {
@@ -100,19 +128,24 @@
 	};
 
 	mpp@a100 { /* MPP 2 */
-		/* ???????????? */
-		qcom,mode = <4>;		/* ??????? output */
-		qcom,output-type = <0>;		/* ?????? */
-		qcom,invert = <0>;		/* Disable Invert */
-		qcom,src-sel = <0>;		/* ?????? */
-		qcom,vin-sel = <2>;		/* ?????? */
-		qcom,ain-route = <1>;		/* ?????? */
-		qcom,master-en = <1>;		/* Enable MPP */
+		/* HR LED */
+		qcom,mode = <4>;
+		qcom,output-type = <0>;
+		qcom,invert = <0>;
+		qcom,src-sel = <0>;
+		qcom,vin-sel = <2>;
+		qcom,ain-route = <1>;
+		qcom,master-en = <1>;
 	};
 };
 
 &mdss_mdp {
 	qcom,mdss-pref-prim-intf = "dsi";
+
+	mdss_fb0: qcom,mdss_fb_primary {
+		qcom,memblock-reserve = <0x83200000 0xfa0000>;
+		qcom,mdss-fb-splash-logo-enabled;
+	};
 };
 
 &pmx_mdss {
@@ -138,36 +171,52 @@
 
 &mdss_dsi_r69431_720p_video {
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_nt35521_720p_video {
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_nt35521s_720p_video {
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_nt35521_ofilm_720p_video {
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_otm1285a_720p_video {
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_r61308_720p_video {
-	qcom,esd-check-enabled;
+	/* qcom,esd-check-enabled; */
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_otm1285a_otp_720p_video {
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &mdss_dsi_r61308_s88047a1_720p_video {
-	qcom,esd-check-enabled;
+	/* qcom,esd-check-enabled; */
 	qcom,cont-splash-enabled;
+	qcom,mdss-dsi-lp11-init;
+	qcom,mdss-dsi-init-delay-us = <200>;
 };
 
 &tlmm_pinmux {
@@ -184,15 +233,15 @@
 
 	ltr553_int_pin {
 		qcom,pins = <&gp 113>;
-		qcom,pin-func = <0x0>;
-		qcom,num-grp-pins = <0x1>;
+		qcom,pin-func = <0>;
+		qcom,num-grp-pins = <1>;
 		label = "ltr553-irq";
 		ltr553_default: ltr553_default {
-			drive-strength = <0x6>;
+			drive-strength = <6>;
 			bias-disable;
 		};
 		ltr553_sleep: ltr553_sleep {
-			drive-strength = <0x6>;
+			drive-strength = <6>;
 			bias-disable;
 		};
 	};
@@ -205,16 +254,17 @@
 		vdd-supply = <&pm8916_l17>;
 		vio-supply = <&pm8916_l6>;
 		interrupt-parent = <&msm_gpio>;
-		interrupts = <113 0x2002>;
+		interrupts = <113 0x2>;
 		pinctrl-names = "default","sleep";
 		pinctrl-0 = <&ltr553_default>;
 		pinctrl-1 = <&ltr553_sleep>;
-		liteon,irq-gpio = <&msm_gpio 113 0x2002>;
+		liteon,irq-gpio = <&msm_gpio 113 0x2>;
 		liteon,als-ps-persist = <0>;
 		liteon,ps-led = <0x7f>;
 		liteon,ps-pulses = <4>;
 		liteon,wakeup-threshold = <4>;
 		liteon,als-integration-time = <0>;
+		liteon,als-sensitivity = <6000 3200 1600 800 0 0 130 1>;
 	};
 
 	mpu6050@68 {
@@ -226,6 +276,7 @@
 		interrupt-parent = <&msm_gpio>;
 		interrupts = <115 0x2>;
 		vdd-supply = <&pm8916_l17>;
+		vlogic-supply = <&pm8916_l16>;
 		vi2c-supply = <&pm8916_l6>;
 		invn,gpio-int = <&msm_gpio 115 0x2>;
 		invn,place = "Portrait Up Back Side";
@@ -233,7 +284,7 @@
 
 	akm@c {
 		compatible = "ak,ak09911";
-		reg = <0x0c>;
+		reg = <0xc>;
 		vdd-supply = <&pm8916_l17>;
 		vio-supply = <&pm8916_l6>;
 		akm,layout = <0x6>;
@@ -261,8 +312,7 @@
 
 		aw2013,red {
 			aw2013,name = "red";
-			aw2013,id = <0>;
-			aw2013,gpio = <1018>;
+			aw2013,id = <2>;
 			aw2013,max-brightness = <255>;
 			aw2013,max-current = <3>;
 			aw2013,rise-time-ms = <2>;
@@ -274,7 +324,6 @@
 		aw2013,green {
 			aw2013,name = "green";
 			aw2013,id = <1>;
-			aw2013,gpio = <1018>;
 			aw2013,max-brightness = <255>;
 			aw2013,max-current = <3>;
 			aw2013,rise-time-ms = <2>;
@@ -285,8 +334,7 @@
 
 		aw2013,blue {
 			aw2013,name = "blue";
-			aw2013,id = <2>;
-			aw2013,gpio = <1018>;
+			aw2013,id = <0>;
 			aw2013,max-brightness = <255>;
 			aw2013,max-current = <3>;
 			aw2013,rise-time-ms = <2>;
