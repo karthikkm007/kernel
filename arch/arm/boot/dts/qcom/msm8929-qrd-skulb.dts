@@ -77,6 +77,10 @@
 	mpu6050@68 { /* Gyroscope and accelerometer sensor combo */
 		invn,place = "Landscape Left";
 	};
+
+	memsic@30 { /* Magnetic field sensor */
+		memsic,dir = "reverse-x-axis-rightward";
+	};
 };
 
 &i2c_5 {
@@ -148,9 +152,12 @@
 		qcom,float-voltage-mv = <4400>;
 		qcom,charging-timeout = <1536>;
 		qcom,recharge-thresh-mv = <100>;
+		qcom,fastchg-ma = <2500>;
 		regulator-name = "smb1357_otg_vreg";
 		qcom,soft-vfloat-comp-disabled;
+		qcom,soft-current-comp-disabled;
 		qcom,thermal-mitigation = <1500 700 600 0>;
+		qcom,gamma-setting = <3 2 0 2>;
 
 		qcom,bms-psy-name = "bms";
 		qcom,iterm-disabled;
@@ -182,8 +189,24 @@
 	qcom,use-external-charger;
 };
 
+/ {
+	qrd_batterydata: qcom,battery-data {
+		qcom,rpull-up-kohm = <100>;
+		qcom,vref-batt-therm = <1800000>;
+		#include "batterydata-qrd-skul-4v4-2920mah.dtsi"
+	};
+};
+
 &pm8916_bms {
 	status = "ok";
+	qcom,resume-soc = <99>;
+	qcom,battery-data = <&qrd_batterydata>;
+};
+
+&pm8916_vadc {
+	chan@30 {
+		qcom,scale-function = <14>;
+	};
 };
 
 &mdss_dsi0 {

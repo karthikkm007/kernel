@@ -1004,9 +1004,9 @@ err_power_disable:
 static int bu21150_fb_resume(struct device *dev)
 {
 	struct bu21150_data *ts = spi_get_drvdata(g_client_bu21150);
-	struct spi_device *client = ts->client;
 	int rc;
 	u8 buf[2] = {0x01, 0x00};
+	u8 buf1[2] = {0x00, 0x00};
 
 	if (!ts->suspended)
 		return 0;
@@ -1031,9 +1031,8 @@ static int bu21150_fb_resume(struct device *dev)
 				"failed to enable panel power\n");
 			goto err_pin_enable;
 		}
-		enable_irq(client->irq);
 	}
-
+	bu21150_write_register(REG_SENS_START, (u16)sizeof(buf1), buf1);
 	bu21150_write_register(REG_INT_RUN_ENB, (u16)sizeof(buf), buf);
 
 	ts->suspended = false;
@@ -1433,6 +1432,8 @@ static long bu21150_ioctl_resume(void)
 	struct bu21150_data *ts = spi_get_drvdata(g_client_bu21150);
 
 	ts->force_unblock_flag = 0;
+
+	enable_irq(ts->client->irq);
 
 	return 0;
 }

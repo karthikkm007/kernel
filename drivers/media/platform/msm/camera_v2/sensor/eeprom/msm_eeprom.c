@@ -17,6 +17,7 @@
 #include "msm_sd.h"
 #include "msm_cci.h"
 #include "msm_eeprom.h"
+#include <linux/hardware_info.h>
 
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
@@ -848,12 +849,6 @@ static int eeprom_config_read_cal_data32(struct msm_eeprom_ctrl_t *e_ctrl,
 	rc = copy_to_user(ptr_dest, e_ctrl->cal_data.mapdata,
 		cdata.cfg.read_data.num_bytes);
 
-	/* should only be called once.  free kernel resource */
-	if (!rc) {
-		kfree(e_ctrl->cal_data.mapdata);
-		kfree(e_ctrl->cal_data.map);
-		memset(&e_ctrl->cal_data, 0, sizeof(e_ctrl->cal_data));
-	}
 	return rc;
 }
 
@@ -1056,7 +1051,17 @@ static int msm_eeprom_platform_probe(struct platform_device *pdev)
 	for (j = 0; j < e_ctrl->cal_data.num_data; j++)
 		CDBG("memory_data[%d] = 0x%X\n", j,
 			e_ctrl->cal_data.mapdata[j]);
-
+	if (eb_info->i2c_slaveaddr == 0x20) {
+		if (e_ctrl->cal_data.mapdata[1] == 0x7) {
+			hardwareinfo_set_prop(HARDWARE_BACK_CAM_MOUDULE_ID,"oufeiguang");
+		}
+		else if (e_ctrl->cal_data.mapdata[1] == 0x6) {
+			hardwareinfo_set_prop(HARDWARE_BACK_CAM_MOUDULE_ID,"qiutaiwei");	
+		}
+	}
+	else {
+		CDBG("%s hardwareinfo_set_prop error :%d\n", __func__, __LINE__);
+	}	
 	e_ctrl->is_supported |= msm_eeprom_match_crc(&e_ctrl->cal_data);
 
 	rc = msm_camera_power_down(power_info, e_ctrl->eeprom_device_type,
