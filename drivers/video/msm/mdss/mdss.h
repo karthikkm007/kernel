@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -124,7 +124,10 @@ struct mdss_data_type {
 	struct regulator *batfet;
 	u32 max_mdp_clk_rate;
 	struct mdss_util_intf *mdss_util;
-	struct mdss_panel_data *pdata;
+#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG)
+	char __iomem *mdss_base;
+	size_t mdp_reg_size;
+#endif
 
 	struct platform_device *pdev;
 	struct dss_io_data mdss_io;
@@ -188,6 +191,7 @@ struct mdss_data_type {
 	struct mdss_fudge_factor ib_factor;
 	struct mdss_fudge_factor ib_factor_overlap;
 	struct mdss_fudge_factor ib_factor_cmd;
+        struct mdss_fudge_factor ib_factor_single;
 	struct mdss_fudge_factor clk_factor;
 
 	u32 disable_prefill;

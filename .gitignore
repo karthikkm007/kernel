@@ -31,7 +31,19 @@ modules.builtin
 *.xz
 *.lzo
 *.patch
+*.rej
 *.gcno
+*.sh
+
+# minimal rules
+
+/*.scmversion
+/*.zip
+/*.tar.md5
+/*.sh
+/ares-tools/
+/ares-out/
+/ares-zip/
 
 #
 # Top-level generic files
@@ -81,6 +93,7 @@ GSYMS
 GTAGS
 
 *.orig
+*.rej
 *~
 \#*#
 

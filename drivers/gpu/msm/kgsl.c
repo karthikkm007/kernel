@@ -2762,6 +2762,20 @@ static int kgsl_setup_phys_file(struct kgsl_mem_entry *entry,
 }
 #endif
 
+static int check_vma_flags(struct vm_area_struct *vma,
+		unsigned int flags)
+{
+	unsigned long flags_requested = (VM_READ | VM_WRITE);
+
+	if (flags & KGSL_MEMFLAGS_GPUREADONLY)
+		flags_requested &= ~VM_WRITE;
+
+	if ((vma->vm_flags & flags_requested) == flags_requested)
+		return 0;
+
+	return -EFAULT;
+}
+
 static int check_vma(struct vm_area_struct *vma, struct file *vmfile,
 		struct kgsl_memdesc *memdesc)
 {
@@ -2775,7 +2789,7 @@ static int check_vma(struct vm_area_struct *vma, struct file *vmfile,
 	if (vma->vm_start != memdesc->useraddr ||
 		(memdesc->useraddr + memdesc->size) != vma->vm_end)
 		return -EINVAL;
-	return 0;
+	return check_vma_flags(vma, memdesc->flags);
 }
 
 static int memdesc_sg_virt(struct kgsl_memdesc *memdesc, struct file *vmfile)
@@ -2784,7 +2798,7 @@ static int memdesc_sg_virt(struct kgsl_memdesc *memdesc, struct file *vmfile)
 	long npages = 0, i;
 	unsigned long sglen = memdesc->size / PAGE_SIZE;
 	struct page **pages = NULL;
-	int write = (memdesc->flags & KGSL_MEMFLAGS_GPUREADONLY) != 0;
+	int write = ((memdesc->flags & KGSL_MEMFLAGS_GPUREADONLY) ? 0 : 1);
 
 	if (sglen == 0 || sglen >= LONG_MAX)
 		return -EINVAL;
@@ -2870,6 +2884,7 @@ static int kgsl_setup_useraddr(struct kgsl_mem_entry *entry,
 	struct kgsl_map_user_mem *param = data;
 	struct dma_buf *dmabuf = NULL;
 	struct vm_area_struct *vma = NULL;
+	int ret;
 
 	if (param->offset != 0 || param->hostptr == 0
 		|| !KGSL_IS_PAGE_ALIGNED(param->hostptr)
@@ -2885,6 +2900,12 @@ static int kgsl_setup_useraddr(struct kgsl_mem_entry *entry,
 
 	if (vma && vma->vm_file) {
 		int fd;
+
+		ret = check_vma_flags(vma, entry->memdesc.flags);
+		if (ret) {
+			up_read(&current->mm->mmap_sem);
+			return ret;
+		}
 
 		/*
 		 * Check to see that this isn't our own memory that we have
@@ -4385,6 +4406,18 @@ static int kgsl_mmap(struct file *file, struct vm_area_struct *vma)
 
 	vma->vm_private_data = entry;
 
+#ifdef CONFIG_TIMA_RKP
+        if (vma->vm_end - vma->vm_start) {
+                /* iommu optimization- needs to be turned ON from
+                * the tz side.
+                */
+                cpu_v7_tima_iommu_opt(vma->vm_start, vma->vm_end, (unsigned long)__pa((unsigned long)vma->vm_mm->pgd));
+                __asm__ __volatile__ (
+                "mcr    p15, 0, r0, c8, c3, 0\n"
+                "dsb\n"
+                "isb\n");
+        }
+#endif
 	/* Determine user-side caching policy */
 
 	cache = kgsl_memdesc_get_cachemode(&entry->memdesc);
